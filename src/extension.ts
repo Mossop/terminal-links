@@ -64,7 +64,7 @@ function parseMatchers(matchers: unknown) {
 
     foundLinks.push({
       regex: new RegExp(asString(item, "regex"), "g"),
-      uriPattern: asString(item, "uriPattern"),
+      uriPattern: asString(item, "uri"),
     });
   }
 
