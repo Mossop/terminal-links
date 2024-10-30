@@ -1,4 +1,4 @@
-# terminal-links README
+# Terminal Links
 
 A Visual Studio Code extension to allow configuring regular expression patterns to identify useful links in
 terminals.
