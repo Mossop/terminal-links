@@ -7,6 +7,7 @@ import {
   env,
   workspace,
   ConfigurationChangeEvent,
+  LogOutputChannel,
 } from "vscode";
 
 interface Config {
@@ -70,28 +71,35 @@ function parseMatchers(matchers: unknown) {
   LINKS = foundLinks;
 }
 
-function parseConfig() {
+function parseConfig(channel: LogOutputChannel) {
   let config = workspace.getConfiguration(
     "terminalLinks",
     workspace.workspaceFile
   );
 
   let matchers = config.get("matchers") ?? [];
+  console.log(`Parsing config ${JSON.stringify(matchers)}`);
   try {
     parseMatchers(matchers);
   } catch (e) {
-    console.error(e);
+    channel.error(e as string | Error);
+    return;
   }
+
+  channel.trace(
+    `Parsed config: ${JSON.stringify(LINKS.map((config) => ({ ...config, regex: config.regex.source })))}`
+  );
 }
 
 export function activate(context: ExtensionContext) {
-  console.log("Activated");
+  let channel = window.createOutputChannel("Terminal Links", { log: true });
+  channel.info("Activated");
 
-  parseConfig();
+  parseConfig(channel);
   context.subscriptions.push(
     workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
       if (e.affectsConfiguration("terminalLinks", workspace.workspaceFile)) {
-        parseConfig();
+        parseConfig(channel);
       }
     }, null)
   );
@@ -111,6 +119,7 @@ export function activate(context: ExtensionContext) {
         let first: [RegExpExecArray, Config] | null = null;
 
         for (let { regex, uriPattern } of LINKS) {
+          channel.trace(`Matching line '${line}' against ${regex.source}`);
           let result = regex.exec(line);
 
           if (result) {

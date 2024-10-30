@@ -3,6 +3,10 @@
   "displayName": "Terminal Links",
   "description": "Configurable links in VSCode's terminal",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/Mossop/terminal-links"
+  },
   "engines": {
     "vscode": "^1.95.0"
   },
