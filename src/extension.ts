@@ -120,14 +120,16 @@ export function activate(context: ExtensionContext) {
           }
         }
 
-        if (first) {
-          let [match, { regex, uriPattern }] = first;
-          let uri = Uri.parse(match[0].replace(regex, uriPattern), true);
-          links.push(new FoundLink(match.index + index, match[0].length, uri));
-
-          line = line.substring(match.index + match[0].length);
-          index += match.index + match[0].length;
+        if (!first) {
+          break;
         }
+
+        let [match, { regex, uriPattern }] = first;
+        let uri = Uri.parse(match[0].replace(regex, uriPattern), true);
+        links.push(new FoundLink(match.index + index, match[0].length, uri));
+
+        line = line.substring(match.index + match[0].length);
+        index += match.index + match[0].length;
       }
 
       return links;
