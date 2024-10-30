@@ -1,0 +1,61 @@
+{
+  "name": "terminal-links",
+  "displayName": "Terminal Links",
+  "description": "Configurable links in VSCode's terminal",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Terminal Links",
+      "properties": {
+        "terminalLinks.matchers": {
+          "type": "array",
+          "scope": "window",
+          "default": [],
+          "description": "A list of regular expressions to match and their replacements.",
+          "items": {
+            "description": "An object with a `regex` and `replacement` property.",
+            "type": "object",
+            "properties": {
+              "regex": {
+                "type": "string",
+                "description": "A regular expression to match against."
+              },
+              "replacement": {
+                "type": "string",
+                "description": "The url to generate by replacing the regular expression. Use $1 etc. to include captured groups."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@mossop/config": "^2.0.5",
+    "@types/vscode": "^1.95.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.13.0",
+    "typescript": "^5.6.3",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
