@@ -1,0 +1,41 @@
+{
+  "terminalLinks.matchers": [
+    {
+      "regex": "/(home|opt|Users)\\/[^\\s:]+\\/[^\\s:]+\\.(py|c|rs|cpp)",
+      "uri": "file:${workspaceFolder}/$0"
+    },
+    {
+      "regex": "test_userHome",
+      "uri": "file:${userHome}/test.txt"
+    },
+    {
+      "regex": "test_workspaceFolderBasename",
+      "uri": "file:${workspaceFolderBasename}/test.txt"
+    },
+    {
+      "regex": "test_cwd",
+      "uri": "file:cwd:'${cwd}'/test.txt"
+    },
+    {
+      "regex": "test_pathSeparator",
+      "uri": "file:sep${pathSeparator}"
+    },
+    {
+      "regex": "test_slash",
+      "uri": "file:slash${/}"
+    },
+    {
+      "regex": "test_envVAR",
+      "uri": "file:${env:HOME}/test.txt"
+    },
+    {
+      "regex": "test_workspaceFolder_Single",
+      "uri": "file:${workspaceFolder:single-folder}/test.txt"
+    },
+    {
+      "regex": "test_workspaceFolderBasename_Single",
+      "uri": "file:${workspaceFolderBasename:single-folder}/test.txt"
+    },
+
+  ],
+}
