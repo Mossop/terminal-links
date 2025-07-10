@@ -23,8 +23,7 @@ class FoundLink extends TerminalLink {
   #uri: Uri;
 
   constructor(startIndex: number, length: number, uri: Uri) {
-    super(startIndex, length, uri.toString());
-
+    super(startIndex, length, uri.toString(true)); // Do not encode the URI in tooltips
     this.#uri = uri;
   }
 
