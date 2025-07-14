@@ -9,6 +9,7 @@ import {
   ConfigurationChangeEvent,
   LogOutputChannel,
 } from "vscode";
+import * as path from "path";
 
 interface Config {
   regex: RegExp;
@@ -16,13 +17,13 @@ interface Config {
 }
 
 let LINKS: Config[] = [];
+let CHANNEL: LogOutputChannel;
 
 class FoundLink extends TerminalLink {
   #uri: Uri;
 
   constructor(startIndex: number, length: number, uri: Uri) {
-    super(startIndex, length, uri.toString());
-
+    super(startIndex, length, uri.toString(true)); // Do not encode the URI in tooltips
     this.#uri = uri;
   }
 
@@ -64,42 +65,45 @@ function parseMatchers(matchers: unknown) {
 
     foundLinks.push({
       regex: new RegExp(asString(item, "regex"), "g"),
-      uriPattern: asString(item, "uri"),
+      uriPattern: expandVariables(asString(item, "uri")),
     });
   }
 
   LINKS = foundLinks;
 }
 
-function parseConfig(channel: LogOutputChannel) {
+function parseConfig() {
   let config = workspace.getConfiguration(
     "terminalLinks",
     workspace.workspaceFile
   );
 
   let matchers = config.get("matchers") ?? [];
-  console.log(`Parsing config ${JSON.stringify(matchers)}`);
+  CHANNEL?.info("Parsing config:\n" + JSON.stringify(matchers ?? [], null, 2));
   try {
     parseMatchers(matchers);
   } catch (e) {
-    channel.error(e as string | Error);
+    CHANNEL?.error((e as Error));
     return;
   }
 
-  channel.trace(
-    `Parsed config: ${JSON.stringify(LINKS.map((config) => ({ ...config, regex: config.regex.source })))}`
+  CHANNEL?.trace(
+    "Parsed config:\n" +
+      LINKS.map((config) =>
+        `  {\n    regex: "${config.regex.source}",\n    uri: "${config.uriPattern}"\n  }`
+      ).join("\n")
   );
 }
 
 export function activate(context: ExtensionContext) {
-  let channel = window.createOutputChannel("Terminal Links", { log: true });
-  channel.info("Activated");
+  CHANNEL = window.createOutputChannel("Terminal Links", { log: true });
+  CHANNEL.info("Activated");
 
-  parseConfig(channel);
+  parseConfig();
   context.subscriptions.push(
     workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
       if (e.affectsConfiguration("terminalLinks", workspace.workspaceFile)) {
-        parseConfig(channel);
+        parseConfig();
       }
     }, null)
   );
@@ -119,7 +123,7 @@ export function activate(context: ExtensionContext) {
         let first: [RegExpExecArray, Config] | null = null;
 
         for (let { regex, uriPattern } of LINKS) {
-          channel.trace(`Matching line '${line}' against ${regex.source}`);
+          CHANNEL.trace(`Matching line '${line}' against ${regex.source}`);
           let result = regex.exec(line);
 
           if (result) {
@@ -151,4 +155,44 @@ export function activate(context: ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {
   // Nothing to do.
+}
+
+function expandVariables(input: string): string {
+  // Collect workspace info
+  const wsFolders = workspace.workspaceFolders ?? [];
+  const wsFolder = wsFolders[0] ?? undefined;
+  const wsPath = wsFolder?.uri.fsPath ?? "";
+  const wsBasename = wsFolder ? path.basename(wsFolder.uri.fsPath) : "";
+  const userHome = process.env.HOME ?? process.env.USERPROFILE ?? "";
+  const pathSeparator = path.sep;
+
+  CHANNEL?.trace(`[expandVariables] input: ${input}`);
+
+  function envVar(name: string): string {
+    return process.env[name] ?? "";
+  }
+
+  function getWorkspaceFolderPath(name: string): string {
+    const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
+    return folder?.uri.fsPath ?? "";
+  }
+  function getWorkspaceFolderBasename(name: string): string {
+    const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
+    return folder ? path.basename(folder.uri.fsPath) : "";
+  }
+
+  // Replace all supported variables, including scoped per workspace folder
+  const result = input
+    .replace(/\${userHome}/g, userHome)
+    .replace(/\${workspaceFolder}/g, wsPath)
+    .replace(/\${workspaceFolderBasename}/g, wsBasename)
+    .replace(/\${pathSeparator}/g, pathSeparator)
+    .replace(/\${\/}/g, pathSeparator)
+    .replace(/\${env:([A-Za-z0-9_]+)}/g, (_, name: string) => envVar(name))
+    // Scoped per workspace folder: ${workspaceFolder:FolderName}
+    .replace(/\${workspaceFolder:([^}]+)}/g, (_, name: string) => getWorkspaceFolderPath(name))
+    .replace(/\${workspaceFolderBasename:([^}]+)}/g, (_, name: string) => getWorkspaceFolderBasename(name));
+
+  CHANNEL?.trace(`[expandVariables] result: ${result}`);
+  return result;
 }

@@ -35,3 +35,16 @@ Due to how Visual Studio Code's APIs work the text to link cannot span multiple 
 This extension is an early version that seems to work but may well contain bugs. Please
 [file an issue](https://github.com/Mossop/terminal-links/issues) if you run into a problem or have a
 suggestion for improvements.
+
+## Supported Variables for URI Expansion
+
+Some [VS Code Predefined Variables](https://code.visualstudio.com/docs/reference/variables-reference#_predefined-variables) are supported. You can use these variables in the `uri` field of your matcher configuration. The following variables are supported:
+
+- `${userHome}`: The path to your home directory.
+- `${workspaceFolder}`: The absolute path to the first workspace folder.
+- `${workspaceFolderBasename}`: The name of the first workspace folder.
+- `${pathSeparator}` or `${/}`: The platform-specific path separator (`/` on macOS/Linux, `\\` on Windows).
+- `${env:VARNAME}`: The value of the environment variable `VARNAME`.
+- `${workspaceFolder:FolderName}`: The absolute path to the workspace folder named `FolderName`.
+- `${workspaceFolderBasename:FolderName}`: The name of the workspace folder named `FolderName`.
+
