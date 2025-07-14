@@ -32,9 +32,7 @@ is used to generate the replacement so the documentation there should help. In p
 
 Due to how Visual Studio Code's APIs work the text to link cannot span multiple lines.
 
-This extension is an early version that seems to work but may well contain bugs. Please
-[file an issue](https://github.com/Mossop/terminal-links/issues) if you run into a problem or have a
-suggestion for improvements.
+Please [file an issue](https://github.com/Mossop/terminal-links/issues) if you run into a problem or have a suggestion for improvements.
 
 ## Supported Variables for URI Expansion
 
@@ -47,4 +45,3 @@ Some [VS Code Predefined Variables](https://code.visualstudio.com/docs/reference
 - `${env:VARNAME}`: The value of the environment variable `VARNAME`.
 - `${workspaceFolder:FolderName}`: The absolute path to the workspace folder named `FolderName`.
 - `${workspaceFolderBasename:FolderName}`: The name of the workspace folder named `FolderName`.
-
