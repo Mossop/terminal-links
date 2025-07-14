@@ -1,2 +1,6 @@
 [tools]
 node = "22"
+"npm:@vscode/vsce" = "latest"
+
+[tasks.publish]
+run = "vsce publish"
