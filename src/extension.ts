@@ -164,7 +164,6 @@ function expandVariables(input: string): string {
   const wsPath = wsFolder?.uri.fsPath ?? "";
   const wsBasename = wsFolder ? path.basename(wsFolder.uri.fsPath) : "";
   const userHome = process.env.HOME ?? process.env.USERPROFILE ?? "";
-  const cwd = process.cwd();
   const pathSeparator = path.sep;
 
   CHANNEL?.trace(`[expandVariables] input: ${input}`);
@@ -187,7 +186,6 @@ function expandVariables(input: string): string {
     .replace(/\${userHome}/g, userHome)
     .replace(/\${workspaceFolder}/g, wsPath)
     .replace(/\${workspaceFolderBasename}/g, wsBasename)
-    .replace(/\${cwd}/g, cwd)
     .replace(/\${pathSeparator}/g, pathSeparator)
     .replace(/\${\/}/g, pathSeparator)
     .replace(/\${env:([A-Za-z0-9_]+)}/g, (_, name: string) => envVar(name))

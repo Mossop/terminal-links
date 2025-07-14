@@ -24,10 +24,6 @@
         "uri": "file:${workspaceFolderBasename}/test.txt"
       },
       {
-        "regex": "test_cwd",
-        "uri": "file:cwd:'${cwd}'/test.txt"
-      },
-      {
         "regex": "test_pathSeparator",
         "uri": "file:sep${pathSeparator}"
       },

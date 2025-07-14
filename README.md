@@ -43,7 +43,6 @@ Some [VS Code Predefined Variables](https://code.visualstudio.com/docs/reference
 - `${userHome}`: The path to your home directory.
 - `${workspaceFolder}`: The absolute path to the first workspace folder.
 - `${workspaceFolderBasename}`: The name of the first workspace folder.
-- `${cwd}`: The current working directory.
 - `${pathSeparator}` or `${/}`: The platform-specific path separator (`/` on macOS/Linux, `\\` on Windows).
 - `${env:VARNAME}`: The value of the environment variable `VARNAME`.
 - `${workspaceFolder:FolderName}`: The absolute path to the workspace folder named `FolderName`.
