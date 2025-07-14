@@ -79,17 +79,17 @@ function parseConfig() {
   );
 
   let matchers = config.get("matchers") ?? [];
-  CHANNEL?.info("Parsing config:\n" + JSON.stringify(matchers, null, 2));
+  CHANNEL?.info("Parsing config:\n" + JSON.stringify(matchers ?? [], null, 2));
   try {
     parseMatchers(matchers);
   } catch (e) {
-    CHANNEL?.error(e as string | Error);
+    CHANNEL?.error((e as Error));
     return;
   }
 
   CHANNEL?.trace(
     "Parsed config:\n" +
-      LINKS.map((config, i) =>
+      LINKS.map((config) =>
         `  {\n    regex: "${config.regex.source}",\n    uri: "${config.uriPattern}"\n  }`
       ).join("\n")
   );
@@ -159,23 +159,23 @@ export function deactivate() {
 
 function expandVariables(input: string): string {
   // Collect workspace info
-  const wsFolders = workspace.workspaceFolders || [];
-  const wsFolder = wsFolders[0] || undefined;
-  const wsPath = wsFolder?.uri.fsPath || "";
+  const wsFolders = workspace.workspaceFolders ?? [];
+  const wsFolder = wsFolders[0] ?? undefined;
+  const wsPath = wsFolder?.uri.fsPath ?? "";
   const wsBasename = wsFolder ? path.basename(wsFolder.uri.fsPath) : "";
-  const userHome = process.env.HOME || process.env.USERPROFILE || "";
+  const userHome = process.env.HOME ?? process.env.USERPROFILE ?? "";
   const cwd = process.cwd();
   const pathSeparator = path.sep;
 
   CHANNEL?.trace(`[expandVariables] input: ${input}`);
 
   function envVar(name: string): string {
-    return process.env[name] || "";
+    return process.env[name] ?? "";
   }
 
   function getWorkspaceFolderPath(name: string): string {
     const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
-    return folder ? folder.uri.fsPath : "";
+    return folder?.uri.fsPath ?? "";
   }
   function getWorkspaceFolderBasename(name: string): string {
     const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
@@ -190,10 +190,10 @@ function expandVariables(input: string): string {
     .replace(/\${cwd}/g, cwd)
     .replace(/\${pathSeparator}/g, pathSeparator)
     .replace(/\${\/}/g, pathSeparator)
-    .replace(/\${env:([A-Za-z0-9_]+)}/g, (_, name) => envVar(name))
+    .replace(/\${env:([A-Za-z0-9_]+)}/g, (_, name: string) => envVar(name))
     // Scoped per workspace folder: ${workspaceFolder:FolderName}
-    .replace(/\${workspaceFolder:([^}]+)}/g, (_, name) => getWorkspaceFolderPath(name))
-    .replace(/\${workspaceFolderBasename:([^}]+)}/g, (_, name) => getWorkspaceFolderBasename(name));
+    .replace(/\${workspaceFolder:([^}]+)}/g, (_, name: string) => getWorkspaceFolderPath(name))
+    .replace(/\${workspaceFolderBasename:([^}]+)}/g, (_, name: string) => getWorkspaceFolderBasename(name));
 
   CHANNEL?.trace(`[expandVariables] result: ${result}`);
   return result;
