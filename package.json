@@ -6,7 +6,6 @@
   "license": "MIT",
   "publisher": "fractalbrew",
   "extensionKind": [
-    "ui",
     "workspace"
   ],
   "repository": {
