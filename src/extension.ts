@@ -83,14 +83,15 @@ function parseConfig() {
   try {
     parseMatchers(matchers);
   } catch (e) {
-    CHANNEL?.error((e as Error));
+    CHANNEL?.error(e as Error);
     return;
   }
 
   CHANNEL?.trace(
     "Parsed config:\n" +
-      LINKS.map((config) =>
-        `  {\n    regex: "${config.regex.source}",\n    uri: "${config.uriPattern}"\n  }`
+      LINKS.map(
+        (config) =>
+          `  {\n    regex: "${config.regex.source}",\n    uri: "${config.uriPattern}"\n  }`
       ).join("\n")
   );
 }
@@ -173,11 +174,15 @@ function expandVariables(input: string): string {
   }
 
   function getWorkspaceFolderPath(name: string): string {
-    const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
+    const folder = wsFolders.find(
+      (f) => path.basename(f.uri.fsPath) === name || f.name === name
+    );
     return folder?.uri.fsPath ?? "";
   }
   function getWorkspaceFolderBasename(name: string): string {
-    const folder = wsFolders.find(f => path.basename(f.uri.fsPath) === name || f.name === name);
+    const folder = wsFolders.find(
+      (f) => path.basename(f.uri.fsPath) === name || f.name === name
+    );
     return folder ? path.basename(folder.uri.fsPath) : "";
   }
 
@@ -190,8 +195,12 @@ function expandVariables(input: string): string {
     .replace(/\${\/}/g, pathSeparator)
     .replace(/\${env:([A-Za-z0-9_]+)}/g, (_, name: string) => envVar(name))
     // Scoped per workspace folder: ${workspaceFolder:FolderName}
-    .replace(/\${workspaceFolder:([^}]+)}/g, (_, name: string) => getWorkspaceFolderPath(name))
-    .replace(/\${workspaceFolderBasename:([^}]+)}/g, (_, name: string) => getWorkspaceFolderBasename(name));
+    .replace(/\${workspaceFolder:([^}]+)}/g, (_, name: string) =>
+      getWorkspaceFolderPath(name)
+    )
+    .replace(/\${workspaceFolderBasename:([^}]+)}/g, (_, name: string) =>
+      getWorkspaceFolderBasename(name)
+    );
 
   CHANNEL?.trace(`[expandVariables] result: ${result}`);
   return result;
