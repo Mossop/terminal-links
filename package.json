@@ -2,7 +2,7 @@
   "name": "terminal-links",
   "displayName": "Terminal Links",
   "description": "Configurable links in VSCode's terminal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "publisher": "fractalbrew",
   "extensionKind": [
