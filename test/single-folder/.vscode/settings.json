@@ -5,6 +5,14 @@
       "uri": "file:${workspaceFolder}/$0"
     },
     {
+      "regex": "\\bworkspace://\\w*/([^\\s:]+):(\\d+)\\b",
+      "uri": "vscode://file${workspaceFolder}/$1:$2"
+    },
+    {
+      "regex": "\\bworkspace://\\w*/([^\\s:]+)\\b",
+      "uri": "vscode://file${workspaceFolder}/$1"
+    },
+    {
       "regex": "test_userHome",
       "uri": "file:${userHome}/test.txt"
     },
@@ -32,6 +40,9 @@
       "regex": "test_workspaceFolderBasename_Single",
       "uri": "file:${workspaceFolderBasename:single-folder}/test.txt"
     },
-
+    {
+      "regex": "setting://(\\S+)\\b",
+      "uri": "vscode://settings/$1"
+    }
   ],
 }

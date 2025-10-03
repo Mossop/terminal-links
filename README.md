@@ -19,6 +19,14 @@ to Mozilla's bug tracker and patch references to Mozilla's Phabricator:
     {
       "regex": "\\b(D\\d+)\\b",
       "uri": "https://phabricator.services.mozilla.com/$1"
+    },
+    {
+      "regex": "\\bmoz-src://\\w*/([^\\s:]+)(?:(?:\\s+|:)(\\d+))",
+      "uri": "vscode://file${workspaceFolder}/$1:$2"
+    },
+    {
+      "regex": "\\bmoz-src://\\w*/([^\\s:]+)",
+      "uri": "vscode://file${workspaceFolder}/$1"
     }
 ],
 ```
@@ -45,3 +53,18 @@ Some [VS Code Predefined Variables](https://code.visualstudio.com/docs/reference
 - `${env:VARNAME}`: The value of the environment variable `VARNAME`.
 - `${workspaceFolder:FolderName}`: The absolute path to the workspace folder named `FolderName`.
 - `${workspaceFolderBasename:FolderName}`: The name of the workspace folder named `FolderName`.
+
+## vscode protocol support
+
+In order to open files in VS Code you can make use of the [vscode protocol](https://code.visualstudio.com/docs/configure/command-line#_opening-vs-code-with-urls). The extension will handle these links automatically rather than round-tripping them through the operating system avoiding VS Code's security warnings. Both file and settings URIs are supported though file is likely more useful. So you can configure something like to treat `local:///` links as references to files in the open folder:
+
+```json
+"terminalLinks.matchers": [
+    {
+      "regex": "\\blocal:///(\\S+)",
+      "uri": "vscode://file${workspaceFolder}/$1"
+    }
+],
+```
+
+Line number and column numbers are supported in the vscode protocol by using a `:` character to separate them from the filename.

@@ -5,11 +5,17 @@ import {
   window,
   Uri,
   env,
+  commands,
   workspace,
   ConfigurationChangeEvent,
   LogOutputChannel,
+  Position,
+  Selection,
+  Range,
 } from "vscode";
 import * as path from "path";
+
+const LINE_RE = /^(.+?)(:\d+)?(:\d+)?$/;
 
 interface Config {
   regex: RegExp;
@@ -111,6 +117,45 @@ export function activate(context: ExtensionContext) {
 
   let disposable = window.registerTerminalLinkProvider({
     async handleTerminalLink(link: FoundLink): Promise<void> {
+      if (link.uri.scheme === "vscode") {
+        switch (link.uri.authority) {
+          case "file": {
+            let { path } = link.uri;
+            let matches = LINE_RE.exec(path);
+            let line = undefined;
+            let col = undefined;
+            if (matches) {
+              path = matches[1];
+              line = matches[2];
+              col = matches[3];
+            }
+
+            let fileUri = Uri.parse(`file://${path}`, true);
+            let document = await workspace.openTextDocument(fileUri);
+            let editor = await window.showTextDocument(document);
+
+            if (line) {
+              line = parseInt(line.substring(1)) - 1;
+              if (col) {
+                col = parseInt(col.substring(1)) - 1;
+              } else {
+                col = 0;
+              }
+
+              let position = new Position(line, col);
+              editor.selection = new Selection(position, position);
+              editor.revealRange(new Range(position, position));
+            }
+            return;
+          }
+          case "settings":
+            await commands.executeCommand(
+              "workbench.action.openSettings",
+              link.uri.path.substring(1)
+            );
+            return;
+        }
+      }
       await env.openExternal(link.uri);
     },
 
