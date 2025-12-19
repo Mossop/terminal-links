@@ -16,10 +16,17 @@ import {
 import * as path from "path";
 
 const LINE_RE = /^(.+?)(:\d+)?(:\d+)?$/;
+const URL_RE = /\b(?:https?|ftp|file):\/\/[^\s]+/g;
 
 interface Config {
   regex: RegExp;
   uriPattern: string;
+}
+
+interface Match {
+  index: number;
+  text: string;
+  config?: Config;
 }
 
 let LINKS: Config[] = [];
@@ -70,7 +77,7 @@ function parseMatchers(matchers: unknown) {
     }
 
     foundLinks.push({
-      regex: new RegExp(asString(item, "regex")),
+      regex: new RegExp(asString(item, "regex"), "g"),
       uriPattern: expandVariables(asString(item, "uri")),
     });
   }
@@ -100,6 +107,54 @@ function parseConfig() {
           `  {\n    regex: "${config.regex.source}",\n    uri: "${config.uriPattern}"\n  }`
       ).join("\n")
   );
+}
+
+function collectAllMatches(line: string): Match[] {
+  let matches: Match[] = Array.from(line.matchAll(URL_RE), (match) => ({
+    index: match.index,
+    text: match[0],
+  }));
+
+  for (let config of LINKS) {
+    let { regex } = config;
+
+    for (let match of line.matchAll(regex)) {
+      CHANNEL?.trace(
+        `Found match '${match[0]}' at position ${match.index} for pattern ${regex.source}`
+      );
+
+      matches.push({
+        index: match.index,
+        text: match[0],
+        config,
+      });
+    }
+  }
+
+  matches.sort((a, b) => a.index - b.index);
+
+  return matches;
+}
+
+function buildNonOverlappingLinks(matches: Match[]): FoundLink[] {
+  let links: FoundLink[] = [];
+  let pos = 0;
+
+  for (let match of matches) {
+    if (match.index < pos) {
+      continue;
+    }
+
+    pos = match.index + match.text.length;
+
+    if (match.config) {
+      let { regex, uriPattern } = match.config;
+      let uri = Uri.parse(match.text.replace(regex, uriPattern), true);
+      links.push(new FoundLink(match.index, match.text.length, uri));
+    }
+  }
+
+  return links;
 }
 
 export function activate(context: ExtensionContext) {
@@ -160,38 +215,11 @@ export function activate(context: ExtensionContext) {
     },
 
     provideTerminalLinks(context: TerminalLinkContext): FoundLink[] {
-      let links: FoundLink[] = [];
+      // Collect all matches (URLs and custom patterns) sorted by position
+      let allMatches = collectAllMatches(context.line);
 
-      let { line } = context;
-      let index = 0;
-
-      while (line.length) {
-        let first: [RegExpExecArray, Config] | null = null;
-
-        for (let { regex, uriPattern } of LINKS) {
-          CHANNEL.trace(`Matching line '${line}' against ${regex.source}`);
-          let result = regex.exec(line);
-
-          if (result) {
-            if (!first || first[0].index > result.index) {
-              first = [result, { regex, uriPattern }];
-            }
-          }
-        }
-
-        if (!first) {
-          break;
-        }
-
-        let [match, { regex, uriPattern }] = first;
-        let uri = Uri.parse(match[0].replace(regex, uriPattern), true);
-        links.push(new FoundLink(match.index + index, match[0].length, uri));
-
-        line = line.substring(match.index + match[0].length);
-        index += match.index + match[0].length;
-      }
-
-      return links;
+      // Filter overlapping matches and build links
+      return buildNonOverlappingLinks(allMatches);
     },
   });
 
