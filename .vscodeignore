@@ -11,3 +11,6 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 .jj
 test/**
+.claude/**
+**/*.tsbuildinfo
+mise.toml
